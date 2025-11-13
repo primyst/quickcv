@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://nostresscv.vercel.app/og-image.png',
+        url: 'https://nostresscv.vercel.app/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Nostress cv AI — clean resume builder',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Nostress CV AI — Simple, Fast Resume Builder',
     description: 'Build clean resumes in seconds. No overdesign, just results.',
-    images: ['https://nostresscv.vercel.app/og-image.png'],
+    images: ['https://nostresscv.vercel.app/og-image.jpg'],
   },
   robots: {
     index: true,

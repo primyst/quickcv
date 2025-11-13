@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from 'react';
 import { FileText, Download, Sparkles, Copy, Check } from 'lucide-react';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';

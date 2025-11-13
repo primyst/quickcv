@@ -1,7 +1,6 @@
-"use client"
-
 import React, { useState } from 'react';
 import { FileText, Download, Sparkles, Copy, Check } from 'lucide-react';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 
 export default function ResumeBuilder() {
   const [step, setStep] = useState('form');
@@ -104,9 +103,6 @@ export default function ResumeBuilder() {
   };
 
   const downloadDocx = async () => {
-    // Import docx library from CDN
-    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = await import('https://cdn.jsdelivr.net/npm/docx@8.5.0/+esm');
-    
     const children = [];
 
     // Header - Name
@@ -681,4 +677,4 @@ export default function ResumeBuilder() {
       </div>
     </div>
   );
-        }
+  }

@@ -442,7 +442,7 @@ export default function ResumeBuilder() {
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-4 text-sm sm:text-base">
             <Sparkles size={18} className="sm:w-5 sm:h-5" />
-            <span className="font-semibold">AI Resume Builder</span>
+            <span className="font-semibold">AI Resume Builder by primyst(Abdulqudus)</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Build Your Resume in Seconds</h1>
           <p className="text-sm sm:text-base text-gray-600">Clean, professional, ATS-friendly. No fancy designs, just results.</p>

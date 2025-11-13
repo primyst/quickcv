@@ -341,41 +341,41 @@ export default function ResumeBuilder() {
 
   if (step === 'preview') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-4">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-4">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">{formData.fullName.toUpperCase()}</h1>
-              <p className="text-lg text-gray-700 mb-3">{formData.jobTitle}</p>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>📞 {formData.phone} | 📧 {formData.email}</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">{formData.fullName.toUpperCase()}</h1>
+              <p className="text-base sm:text-lg text-gray-700 mb-3">{formData.jobTitle}</p>
+              <div className="text-xs sm:text-sm text-gray-600 space-y-1">
+                <p className="break-all">📞 {formData.phone} | 📧 {formData.email}</p>
                 <p>🌍 {formData.location}</p>
-                {formData.portfolio && <p>🔗 Portfolio: {formData.portfolio}</p>}
+                {formData.portfolio && <p className="break-all">🔗 Portfolio: {formData.portfolio}</p>}
               </div>
             </div>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">PROFILE</h2>
-              <p className="text-gray-700 whitespace-pre-line">{formData.profile}</p>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">PROFILE</h2>
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{formData.profile}</p>
             </div>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">WORK EXPERIENCE</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">WORK EXPERIENCE</h2>
               {formData.workExperience.map((exp, idx) => (
                 exp.title && (
                   <div key={idx} className="mb-4">
-                    <p className="font-semibold text-gray-900">{exp.title} ({exp.period})</p>
-                    <p className="text-gray-700 whitespace-pre-line mt-1">{exp.responsibilities}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900">{exp.title} ({exp.period})</p>
+                    <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line mt-1">{exp.responsibilities}</p>
                   </div>
                 )
               ))}
             </div>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">EDUCATION</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">EDUCATION</h2>
               {formData.education.map((edu, idx) => (
                 edu.degree && (
-                  <p key={idx} className="text-gray-700 mb-2">
+                  <p key={idx} className="text-sm sm:text-base text-gray-700 mb-2">
                     {edu.degree} — {edu.institution} ({edu.period})
                     {edu.remark && <span className="text-gray-600"> [Remark: {edu.remark}]</span>}
                   </p>
@@ -384,51 +384,51 @@ export default function ResumeBuilder() {
             </div>
 
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">TECHNICAL SKILLS</h2>
-              {formData.skills.frontend && <p className="text-gray-700"><strong>Frontend:</strong> {formData.skills.frontend}</p>}
-              {formData.skills.backend && <p className="text-gray-700"><strong>Backend:</strong> {formData.skills.backend}</p>}
-              {formData.skills.other && <p className="text-gray-700"><strong>Other:</strong> {formData.skills.other}</p>}
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">TECHNICAL SKILLS</h2>
+              {formData.skills.frontend && <p className="text-sm sm:text-base text-gray-700"><strong>Frontend:</strong> {formData.skills.frontend}</p>}
+              {formData.skills.backend && <p className="text-sm sm:text-base text-gray-700"><strong>Backend:</strong> {formData.skills.backend}</p>}
+              {formData.skills.other && <p className="text-sm sm:text-base text-gray-700"><strong>Other:</strong> {formData.skills.other}</p>}
             </div>
 
             {formData.languages && (
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">LANGUAGES</h2>
-                <p className="text-gray-700 whitespace-pre-line">{formData.languages}</p>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">LANGUAGES</h2>
+                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{formData.languages}</p>
               </div>
             )}
 
             {formData.strengths && (
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">STRENGTHS</h2>
-                <p className="text-gray-700 whitespace-pre-line">{formData.strengths}</p>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">STRENGTHS</h2>
+                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{formData.strengths}</p>
               </div>
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setStep('form')}
-              className="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              className="w-full sm:flex-1 px-4 sm:px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base"
             >
               ← Edit Resume
             </button>
             <button
               onClick={copyToClipboard}
-              className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+              className="w-full sm:flex-1 px-4 sm:px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm sm:text-base"
             >
-              {copied ? <Check size={20} /> : <Copy size={20} />}
+              {copied ? <Check size={18} className="sm:w-5 sm:h-5" /> : <Copy size={18} className="sm:w-5 sm:h-5" />}
               {copied ? 'Copied!' : 'Copy to Clipboard'}
             </button>
             <button
               onClick={downloadDocx}
-              className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+              className="w-full sm:flex-1 px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm sm:text-base"
             >
-              <Download size={20} />
+              <Download size={18} className="sm:w-5 sm:h-5" />
               Download .docx
             </button>
           </div>
           
-          <footer className="mt-8 text-center text-sm text-gray-600">
+          <footer className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-gray-600">
             Built by <a href="https://aq-portfolio-rose.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-semibold">Primyst (Abdulqudus)</a>
           </footer>
         </div>
@@ -437,54 +437,54 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full mb-4">
-            <Sparkles size={20} />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 sm:px-4 py-2 rounded-full mb-3 sm:mb-4 text-sm sm:text-base">
+            <Sparkles size={18} className="sm:w-5 sm:h-5" />
             <span className="font-semibold">AI Resume Builder</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Build Your Resume in Seconds</h1>
-          <p className="text-gray-600">Clean, professional, ATS-friendly. No fancy designs, just results.</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Build Your Resume in Seconds</h1>
+          <p className="text-sm sm:text-base text-gray-600">Clean, professional, ATS-friendly. No fancy designs, just results.</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
           <div className="space-y-6">
             {/* Basic Info */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <FileText size={24} />
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <FileText size={20} className="sm:w-6 sm:h-6" />
                 Basic Information
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <input
                   type="text"
                   placeholder="Full Name"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <input
                   type="text"
                   placeholder="Job Title (e.g., Full-Stack Developer)"
                   value={formData.jobTitle}
                   onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <input
                     type="text"
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   <input
                     type="email"
                     placeholder="Email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
                 <input
@@ -492,60 +492,60 @@ export default function ResumeBuilder() {
                   placeholder="Location"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <input
                   type="text"
                   placeholder="Portfolio URL (optional)"
                   value={formData.portfolio}
                   onChange={(e) => handleInputChange('portfolio', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             {/* Profile */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Profile Summary</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Profile Summary</h3>
               <textarea
                 placeholder="A brief overview of your experience and what makes you great..."
                 value={formData.profile}
                 onChange={(e) => handleInputChange('profile', e.target.value)}
                 rows="5"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             {/* Work Experience */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Work Experience</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Work Experience</h3>
               {formData.workExperience.map((exp, idx) => (
-                <div key={idx} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                <div key={idx} className="mb-4 p-3 sm:p-4 border border-gray-200 rounded-lg">
                   <input
                     type="text"
                     placeholder="Job Title & Company"
                     value={exp.title}
                     onChange={(e) => handleArrayChange('workExperience', idx, 'title', e.target.value)}
-                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   <input
                     type="text"
                     placeholder="Period (e.g., 2024 – Present)"
                     value={exp.period}
                     onChange={(e) => handleArrayChange('workExperience', idx, 'period', e.target.value)}
-                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   <textarea
                     placeholder="Responsibilities (use bullet points with - )"
                     value={exp.responsibilities}
                     onChange={(e) => handleArrayChange('workExperience', idx, 'responsibilities', e.target.value)}
                     rows="4"
-                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   {idx > 0 && (
                     <button
                       onClick={() => removeArrayItem('workExperience', idx)}
-                      className="text-red-600 text-sm hover:text-red-800"
+                      className="text-red-600 text-xs sm:text-sm hover:text-red-800"
                     >
                       Remove
                     </button>
@@ -554,7 +554,7 @@ export default function ResumeBuilder() {
               ))}
               <button
                 onClick={() => addArrayItem('workExperience')}
-                className="text-indigo-600 text-sm font-semibold hover:text-indigo-800"
+                className="text-indigo-600 text-xs sm:text-sm font-semibold hover:text-indigo-800"
               >
                 + Add Another Position
               </button>
@@ -562,43 +562,43 @@ export default function ResumeBuilder() {
 
             {/* Education */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Education</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Education</h3>
               {formData.education.map((edu, idx) => (
-                <div key={idx} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                <div key={idx} className="mb-4 p-3 sm:p-4 border border-gray-200 rounded-lg">
                   <input
                     type="text"
                     placeholder="Degree"
                     value={edu.degree}
                     onChange={(e) => handleArrayChange('education', idx, 'degree', e.target.value)}
-                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                   <input
                     type="text"
                     placeholder="Institution"
                     value={edu.institution}
                     onChange={(e) => handleArrayChange('education', idx, 'institution', e.target.value)}
-                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       type="text"
                       placeholder="Period"
                       value={edu.period}
                       onChange={(e) => handleArrayChange('education', idx, 'period', e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     />
                     <input
                       type="text"
                       placeholder="Remark (optional)"
                       value={edu.remark}
                       onChange={(e) => handleArrayChange('education', idx, 'remark', e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     />
                   </div>
                   {idx > 0 && (
                     <button
                       onClick={() => removeArrayItem('education', idx)}
-                      className="text-red-600 text-sm hover:text-red-800 mt-2"
+                      className="text-red-600 text-xs sm:text-sm hover:text-red-800 mt-2"
                     >
                       Remove
                     </button>
@@ -607,7 +607,7 @@ export default function ResumeBuilder() {
               ))}
               <button
                 onClick={() => addArrayItem('education')}
-                className="text-indigo-600 text-sm font-semibold hover:text-indigo-800"
+                className="text-indigo-600 text-xs sm:text-sm font-semibold hover:text-indigo-800"
               >
                 + Add Another Education
               </button>
@@ -615,68 +615,68 @@ export default function ResumeBuilder() {
 
             {/* Skills */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Technical Skills</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Technical Skills</h3>
               <input
                 type="text"
                 placeholder="Frontend (e.g., React.js, Next.js, TypeScript)"
                 value={formData.skills.frontend}
                 onChange={(e) => handleInputChange('skills', { ...formData.skills, frontend: e.target.value })}
-                className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Backend (e.g., Node.js, Express, PostgreSQL)"
                 value={formData.skills.backend}
                 onChange={(e) => handleInputChange('skills', { ...formData.skills, backend: e.target.value })}
-                className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 mb-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Other Skills (optional)"
                 value={formData.skills.other}
                 onChange={(e) => handleInputChange('skills', { ...formData.skills, other: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             {/* Languages */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Languages (Optional)</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Languages (Optional)</h3>
               <textarea
                 placeholder="e.g., English — Fluent&#10;Yoruba — Native"
                 value={formData.languages}
                 onChange={(e) => handleInputChange('languages', e.target.value)}
                 rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             {/* Strengths */}
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Strengths (Optional)</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Strengths (Optional)</h3>
               <textarea
                 placeholder="e.g., Strong problem-solving skills&#10;Team player with leadership experience"
                 value={formData.strengths}
                 onChange={(e) => handleInputChange('strengths', e.target.value)}
                 rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             <button
               onClick={generateResume}
-              className="w-full px-6 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold text-lg flex items-center justify-center gap-2"
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold text-base sm:text-lg flex items-center justify-center gap-2"
             >
-              <Sparkles size={24} />
+              <Sparkles size={20} className="sm:w-6 sm:h-6" />
               Generate Resume
             </button>
           </div>
         </div>
         
-        <footer className="mt-8 text-center text-sm text-gray-600">
+        <footer className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-gray-600">
           Built by <a href="https://aq-portfolio-rose.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-semibold">Primyst (Abdulqudus)</a>
         </footer>
       </div>
     </div>
   );
-  }
+        }

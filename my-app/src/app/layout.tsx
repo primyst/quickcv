@@ -1,8 +1,50 @@
 'use client'
 
+import type { Metadata } from 'next'
 import './globals.css'
 import { useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/next'
+
+export const metadata: Metadata = {
+  title: 'Nostress AI — Simple, Fast Resume Builder',
+  description:
+    'Nostress AI: Generate clean, ATS-friendly resumes in seconds. Minimal design, maximum clarity. Built for devs, creators, and job hunters who want results, not graphics.',
+  keywords: [
+    'resume builder',
+    'AI resume',
+    'CV generator',
+    'ATS-friendly resume',
+    'nostress ai',
+  ],
+  authors: [{ name: 'Abdulqudus (Primyst)', url: 'https://aq-portfolio-rose.vercel.app' }],
+  metadataBase: new URL('https://nostresscv.vercel.app'),
+  openGraph: {
+    title: 'Nostress AI — Simple, Fast Resume Builder',
+    description:
+      'Generate clean, ATS-friendly resumes in seconds. Minimal design, maximum clarity.',
+    url: 'https://nostresscv.vercel.app',
+    siteName: 'Nostress AI',
+    type: 'website',
+    images: [
+      {
+        url: 'https://nostresscv.vercel.app/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Nostress AI — clean resume builder',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Nostress AI — Simple, Fast Resume Builder',
+    description: 'Build clean resumes in seconds. No overdesign, just results.',
+    images: ['https://nostresscv.vercel.app/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 

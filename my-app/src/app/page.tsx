@@ -1,266 +1,684 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
-import { ArrowRight, Zap, FileText, Share2, CheckCircle2 } from 'lucide-react'
+import React, { useState } from 'react';
+import { FileText, Download, Sparkles, Copy, Check } from 'lucide-react';
 
-export default function LandingPage() {
-  const router = useRouter()
-  const [isChecking, setIsChecking] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
+export default function ResumeBuilder() {
+  const [step, setStep] = useState('form');
+  const [copied, setCopied] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    jobTitle: '',
+    phone: '',
+    email: '',
+    location: '',
+    portfolio: '',
+    profile: '',
+    workExperience: [{ title: '', period: '', responsibilities: '' }],
+    education: [{ degree: '', institution: '', period: '', remark: '' }],
+    skills: { frontend: '', backend: '', other: '' },
+    languages: '',
+    strengths: ''
+  });
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      const session = data.session
-      if (session) {
-        router.push('/dashboard')
-      } else {
-        setIsChecking(false)
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleArrayChange = (field, index, key, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => 
+        i === index ? { ...item, [key]: value } : item
+      )
+    }));
+  };
+
+  const addArrayItem = (field) => {
+    const templates = {
+      workExperience: { title: '', period: '', responsibilities: '' },
+      education: { degree: '', institution: '', period: '', remark: '' }
+    };
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], templates[field]]
+    }));
+  };
+
+  const removeArrayItem = (field, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
+
+  const generateResume = () => {
+    setStep('preview');
+  };
+
+  const copyToClipboard = async () => {
+    let content = `${formData.fullName.toUpperCase()}\n`;
+    content += `${formData.jobTitle}\n`;
+    content += `📞 ${formData.phone} | 📧 ${formData.email}\n`;
+    content += `🌍 ${formData.location}\n`;
+    if (formData.portfolio) content += `🔗 Portfolio: ${formData.portfolio}\n`;
+    content += `\nPROFILE\n${formData.profile}\n`;
+    
+    content += `\nWORK EXPERIENCE\n`;
+    formData.workExperience.forEach(exp => {
+      if (exp.title) {
+        content += `${exp.title} (${exp.period})\n`;
+        content += `${exp.responsibilities}\n\n`;
       }
+    });
+    
+    content += `EDUCATION\n`;
+    formData.education.forEach(edu => {
+      if (edu.degree) {
+        content += `${edu.degree} — ${edu.institution} (${edu.period})`;
+        if (edu.remark) content += ` [Remark: ${edu.remark}]`;
+        content += `\n`;
+      }
+    });
+    
+    content += `\nTECHNICAL SKILLS\n`;
+    if (formData.skills.frontend) content += `Frontend: ${formData.skills.frontend}\n`;
+    if (formData.skills.backend) content += `Backend: ${formData.skills.backend}\n`;
+    if (formData.skills.other) content += `Other: ${formData.skills.other}\n`;
+    
+    if (formData.languages) {
+      content += `\nLANGUAGES\n${formData.languages}\n`;
     }
-    checkSession()
-  }, [router])
-
-  const handleLogin = async () => {
-    setIsLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    if (error) {
-      console.error('Login error:', error.message)
-      setIsLoading(false)
+    
+    if (formData.strengths) {
+      content += `\nSTRENGTHS\n${formData.strengths}\n`;
     }
-  }
 
-  if (isChecking) {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const downloadDocx = async () => {
+    // Import docx library from CDN
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = await import('https://cdn.jsdelivr.net/npm/docx@8.5.0/+esm');
+    
+    const children = [];
+
+    // Header - Name
+    children.push(
+      new Paragraph({
+        text: formData.fullName.toUpperCase(),
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 100 }
+      })
+    );
+
+    // Job Title
+    children.push(
+      new Paragraph({
+        text: formData.jobTitle,
+        spacing: { after: 100 }
+      })
+    );
+
+    // Contact Info
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun(`📞 ${formData.phone} | 📧 ${formData.email}`)
+        ],
+        spacing: { after: 100 }
+      })
+    );
+
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun(`🌍 ${formData.location}`)
+        ],
+        spacing: { after: 100 }
+      })
+    );
+
+    if (formData.portfolio) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun(`🔗 Portfolio: ${formData.portfolio}`)
+          ],
+          spacing: { after: 200 }
+        })
+      );
+    }
+
+    // Profile Section
+    children.push(
+      new Paragraph({
+        text: 'PROFILE',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 100 }
+      })
+    );
+
+    children.push(
+      new Paragraph({
+        text: formData.profile,
+        spacing: { after: 200 }
+      })
+    );
+
+    // Work Experience
+    children.push(
+      new Paragraph({
+        text: 'WORK EXPERIENCE',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 100 }
+      })
+    );
+
+    formData.workExperience.forEach(exp => {
+      if (exp.title) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: exp.title, bold: true }),
+              new TextRun(` (${exp.period})`)
+            ],
+            spacing: { after: 100 }
+          })
+        );
+
+        const responsibilities = exp.responsibilities.split('\n').filter(r => r.trim());
+        responsibilities.forEach(resp => {
+          children.push(
+            new Paragraph({
+              text: resp,
+              spacing: { after: 50 }
+            })
+          );
+        });
+
+        children.push(
+          new Paragraph({
+            text: '',
+            spacing: { after: 100 }
+          })
+        );
+      }
+    });
+
+    // Education
+    children.push(
+      new Paragraph({
+        text: 'EDUCATION',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 100 }
+      })
+    );
+
+    formData.education.forEach(edu => {
+      if (edu.degree) {
+        let eduText = `${edu.degree} — ${edu.institution} (${edu.period})`;
+        if (edu.remark) eduText += ` [Remark: ${edu.remark}]`;
+        
+        children.push(
+          new Paragraph({
+            text: eduText,
+            spacing: { after: 100 }
+          })
+        );
+      }
+    });
+
+    // Technical Skills
+    children.push(
+      new Paragraph({
+        text: 'TECHNICAL SKILLS',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 100 }
+      })
+    );
+
+    if (formData.skills.frontend) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Frontend: ', bold: true }),
+            new TextRun(formData.skills.frontend)
+          ],
+          spacing: { after: 50 }
+        })
+      );
+    }
+
+    if (formData.skills.backend) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Backend: ', bold: true }),
+            new TextRun(formData.skills.backend)
+          ],
+          spacing: { after: 50 }
+        })
+      );
+    }
+
+    if (formData.skills.other) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Other: ', bold: true }),
+            new TextRun(formData.skills.other)
+          ],
+          spacing: { after: 100 }
+        })
+      );
+    }
+
+    // Languages
+    if (formData.languages) {
+      children.push(
+        new Paragraph({
+          text: 'LANGUAGES',
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 100 }
+        })
+      );
+
+      const languages = formData.languages.split('\n').filter(l => l.trim());
+      languages.forEach(lang => {
+        children.push(
+          new Paragraph({
+            text: lang,
+            spacing: { after: 50 }
+          })
+        );
+      });
+    }
+
+    // Strengths
+    if (formData.strengths) {
+      children.push(
+        new Paragraph({
+          text: 'STRENGTHS',
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 100 }
+        })
+      );
+
+      const strengths = formData.strengths.split('\n').filter(s => s.trim());
+      strengths.forEach(strength => {
+        children.push(
+          new Paragraph({
+            text: strength,
+            spacing: { after: 50 }
+          })
+        );
+      });
+    }
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: children
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${formData.fullName.replace(/\s+/g, '_')}_Resume.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  if (step === 'preview') {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-400 border-t-blue-200 rounded-full animate-spin" />
-          <p className="text-slate-300 text-sm">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  const features = [
-    {
-      icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Convert documents in seconds with AI-powered processing'
-    },
-    {
-      icon: FileText,
-      title: 'Any Format',
-      description: 'Works with PDFs, images, scans, and more'
-    },
-    {
-      icon: Share2,
-      title: 'Instantly Shareable',
-      description: 'Download, edit, and collaborate with ease'
-    }
-  ]
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-blue-900 text-white overflow-hidden">
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-pulse delay-500" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="pt-6 px-6 sm:px-8">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8 mb-4">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-1">{formData.fullName.toUpperCase()}</h1>
+              <p className="text-lg text-gray-700 mb-3">{formData.jobTitle}</p>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>📞 {formData.phone} | 📧 {formData.email}</p>
+                <p>🌍 {formData.location}</p>
+                {formData.portfolio && <p>🔗 Portfolio: {formData.portfolio}</p>}
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-200 to-blue-100 bg-clip-text text-transparent">
-                SnapToDoc
-              </span>
-            </div>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="px-6 py-2 text-slate-300 hover:text-white transition-colors text-sm font-medium"
-            >
-              Dashboard
-            </button>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="px-6 sm:px-8 py-20 sm:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fadeIn">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-full text-sm text-blue-200">
-              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-              Now with OCR enhancement
             </div>
 
-            {/* Main headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-              Turn Paper into
-              <span className="block bg-gradient-to-r from-blue-200 via-blue-300 to-blue-100 bg-clip-text text-transparent mt-2">
-                Editable Files Instantly
-              </span>
-            </h1>
-
-            {/* Subheading */}
-            <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              SnapToDoc converts any printed or scanned document into perfectly formatted, editable files. No manual typing. No frustration. Just instant results.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <button
-                onClick={handleLogin}
-                disabled={isLoading}
-                className="group relative px-8 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold text-lg rounded-xl shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Try for Free
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => router.push('/docs')}
-                className="px-8 sm:px-10 py-3 sm:py-4 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-600 hover:border-slate-500 text-white font-semibold text-lg rounded-xl transition-all transform hover:-translate-y-1 active:translate-y-0"
-              >
-                Learn More
-              </button>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">PROFILE</h2>
+              <p className="text-gray-700 whitespace-pre-line">{formData.profile}</p>
             </div>
 
-            {/* Trust badges */}
-            <div className="pt-4 space-y-2">
-              <p className="text-sm text-slate-400 font-medium">
-                🎁 Free 5 conversions per week · Premium coming soon
-              </p>
-              <p className="text-xs text-slate-500">
-                No credit card required · Takes less than 30 seconds
-              </p>
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="max-w-5xl mx-auto mt-24">
-            <div className="grid md:grid-cols-3 gap-6">
-              {features.map((feature, idx) => {
-                const Icon = feature.icon
-                return (
-                  <div
-                    key={idx}
-                    className="group p-6 sm:p-8 bg-slate-800/50 hover:bg-slate-800/80 border border-slate-700 hover:border-blue-500/50 rounded-2xl transition-all duration-300 transform hover:-translate-y-2"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">WORK EXPERIENCE</h2>
+              {formData.workExperience.map((exp, idx) => (
+                exp.title && (
+                  <div key={idx} className="mb-4">
+                    <p className="font-semibold text-gray-900">{exp.title} ({exp.period})</p>
+                    <p className="text-gray-700 whitespace-pre-line mt-1">{exp.responsibilities}</p>
                   </div>
                 )
-              })}
+              ))}
             </div>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">EDUCATION</h2>
+              {formData.education.map((edu, idx) => (
+                edu.degree && (
+                  <p key={idx} className="text-gray-700 mb-2">
+                    {edu.degree} — {edu.institution} ({edu.period})
+                    {edu.remark && <span className="text-gray-600"> [Remark: {edu.remark}]</span>}
+                  </p>
+                )
+              ))}
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">TECHNICAL SKILLS</h2>
+              {formData.skills.frontend && <p className="text-gray-700"><strong>Frontend:</strong> {formData.skills.frontend}</p>}
+              {formData.skills.backend && <p className="text-gray-700"><strong>Backend:</strong> {formData.skills.backend}</p>}
+              {formData.skills.other && <p className="text-gray-700"><strong>Other:</strong> {formData.skills.other}</p>}
+            </div>
+
+            {formData.languages && (
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">LANGUAGES</h2>
+                <p className="text-gray-700 whitespace-pre-line">{formData.languages}</p>
+              </div>
+            )}
+
+            {formData.strengths && (
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2 border-b-2 border-gray-300 pb-1">STRENGTHS</h2>
+                <p className="text-gray-700 whitespace-pre-line">{formData.strengths}</p>
+              </div>
+            )}
           </div>
 
-          {/* Social Proof */}
-          <div className="max-w-5xl mx-auto mt-24 grid sm:grid-cols-3 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-300">10k+</div>
-              <p className="text-slate-400 text-sm">Conversions completed</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-300">99.9%</div>
-              <p className="text-slate-400 text-sm">Accuracy rate</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-300">&lt;30sec</div>
-              <p className="text-slate-400 text-sm">Average processing time</p>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStep('form')}
+              className="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            >
+              ← Edit Resume
+            </button>
+            <button
+              onClick={copyToClipboard}
+              className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+            >
+              {copied ? <Check size={20} /> : <Copy size={20} />}
+              {copied ? 'Copied!' : 'Copy to Clipboard'}
+            </button>
+            <button
+              onClick={downloadDocx}
+              className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+            >
+              <Download size={20} />
+              Download .docx
+            </button>
           </div>
-        </section>
+          
+          <footer className="mt-8 text-center text-sm text-gray-600">
+            Built by <a href="https://aq-portfolio-rose.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-semibold">Primyst (Abdulqudus)</a>
+          </footer>
+        </div>
+      </div>
+    );
+  }
 
-        {/* Footer */}
-        <footer className="border-t border-slate-700/50 mt-24 py-12 px-6 sm:px-8">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid sm:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-700/50">
-              <div>
-                <h4 className="font-semibold text-white mb-4">Product</h4>
-                <ul className="space-y-2 text-sm text-slate-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-white mb-4">Company</h4>
-                <ul className="space-y-2 text-sm text-slate-400">
-                  <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-white mb-4">Legal</h4>
-                <ul className="space-y-2 text-sm text-slate-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-white mb-4">Social</h4>
-                <ul className="space-y-2 text-sm text-slate-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">GitHub</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between">
-              <p className="text-slate-500 text-sm">© {new Date().getFullYear()} SnapToDoc. All rights reserved.</p>
-              <p className="text-slate-500 text-sm mt-4 sm:mt-0">Built with ❤️ for productivity</p>
-            </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full mb-4">
+            <Sparkles size={20} />
+            <span className="font-semibold">AI Resume Builder</span>
           </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Build Your Resume in Seconds</h1>
+          <p className="text-gray-600">Clean, professional, ATS-friendly. No fancy designs, just results.</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <FileText size={24} />
+                Basic Information
+              </h2>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <input
+                  type="text"
+                  placeholder="Job Title (e.g., Full-Stack Developer)"
+                  value={formData.jobTitle}
+                  onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Phone"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <input
+                  type="text"
+                  placeholder="Portfolio URL (optional)"
+                  value={formData.portfolio}
+                  onChange={(e) => handleInputChange('portfolio', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Profile */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Profile Summary</h3>
+              <textarea
+                placeholder="A brief overview of your experience and what makes you great..."
+                value={formData.profile}
+                onChange={(e) => handleInputChange('profile', e.target.value)}
+                rows="5"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Work Experience */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Work Experience</h3>
+              {formData.workExperience.map((exp, idx) => (
+                <div key={idx} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                  <input
+                    type="text"
+                    placeholder="Job Title & Company"
+                    value={exp.title}
+                    onChange={(e) => handleArrayChange('workExperience', idx, 'title', e.target.value)}
+                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Period (e.g., 2024 – Present)"
+                    value={exp.period}
+                    onChange={(e) => handleArrayChange('workExperience', idx, 'period', e.target.value)}
+                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <textarea
+                    placeholder="Responsibilities (use bullet points with - )"
+                    value={exp.responsibilities}
+                    onChange={(e) => handleArrayChange('workExperience', idx, 'responsibilities', e.target.value)}
+                    rows="4"
+                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  {idx > 0 && (
+                    <button
+                      onClick={() => removeArrayItem('workExperience', idx)}
+                      className="text-red-600 text-sm hover:text-red-800"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={() => addArrayItem('workExperience')}
+                className="text-indigo-600 text-sm font-semibold hover:text-indigo-800"
+              >
+                + Add Another Position
+              </button>
+            </div>
+
+            {/* Education */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Education</h3>
+              {formData.education.map((edu, idx) => (
+                <div key={idx} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                  <input
+                    type="text"
+                    placeholder="Degree"
+                    value={edu.degree}
+                    onChange={(e) => handleArrayChange('education', idx, 'degree', e.target.value)}
+                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Institution"
+                    value={edu.institution}
+                    onChange={(e) => handleArrayChange('education', idx, 'institution', e.target.value)}
+                    className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Period"
+                      value={edu.period}
+                      onChange={(e) => handleArrayChange('education', idx, 'period', e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Remark (optional)"
+                      value={edu.remark}
+                      onChange={(e) => handleArrayChange('education', idx, 'remark', e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  {idx > 0 && (
+                    <button
+                      onClick={() => removeArrayItem('education', idx)}
+                      className="text-red-600 text-sm hover:text-red-800 mt-2"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={() => addArrayItem('education')}
+                className="text-indigo-600 text-sm font-semibold hover:text-indigo-800"
+              >
+                + Add Another Education
+              </button>
+            </div>
+
+            {/* Skills */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Technical Skills</h3>
+              <input
+                type="text"
+                placeholder="Frontend (e.g., React.js, Next.js, TypeScript)"
+                value={formData.skills.frontend}
+                onChange={(e) => handleInputChange('skills', { ...formData.skills, frontend: e.target.value })}
+                className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                placeholder="Backend (e.g., Node.js, Express, PostgreSQL)"
+                value={formData.skills.backend}
+                onChange={(e) => handleInputChange('skills', { ...formData.skills, backend: e.target.value })}
+                className="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                placeholder="Other Skills (optional)"
+                value={formData.skills.other}
+                onChange={(e) => handleInputChange('skills', { ...formData.skills, other: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Languages */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Languages (Optional)</h3>
+              <textarea
+                placeholder="e.g., English — Fluent&#10;Yoruba — Native"
+                value={formData.languages}
+                onChange={(e) => handleInputChange('languages', e.target.value)}
+                rows="3"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Strengths */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Strengths (Optional)</h3>
+              <textarea
+                placeholder="e.g., Strong problem-solving skills&#10;Team player with leadership experience"
+                value={formData.strengths}
+                onChange={(e) => handleInputChange('strengths', e.target.value)}
+                rows="3"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <button
+              onClick={generateResume}
+              className="w-full px-6 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold text-lg flex items-center justify-center gap-2"
+            >
+              <Sparkles size={24} />
+              Generate Resume
+            </button>
+          </div>
+        </div>
+        
+        <footer className="mt-8 text-center text-sm text-gray-600">
+          Built by <a href="https://aq-portfolio-rose.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-semibold">Primyst (Abdulqudus)</a>
         </footer>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out;
-        }
-        .delay-1000 {
-          animation-delay: 1000ms;
-        }
-        .delay-500 {
-          animation-delay: 500ms;
-        }
-      `}</style>
     </div>
-  )
-}
+  );
+        }

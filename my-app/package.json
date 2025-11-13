@@ -1,5 +1,5 @@
 {
-  "name": "restore-image",
+  "name": "quickcv",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,17 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@bytescale/upload-widget-react": "^4.19.0",
-    "@google-cloud/vision": "^5.3.4",
-    "@gradio/client": "^1.19.0",
-    "@headlessui/react": "^2.2.9",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/auth-helpers-react": "^0.5.0",
-    "@supabase/ssr": "^0.1.0",
-    "@supabase/supabase-js": "^2.58.0",
-    "@tensorflow/tfjs": "^4.22.0",
-    "@upstash/ratelimit": "^2.0.6",
-    "@upstash/redis": "^1.35.4",
     "@vercel/analytics": "^1.0.0",
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
@@ -32,18 +21,7 @@
     "nsfw-filter": "^1.0.4",
     "nsfwjs": "^4.2.1",
     "pdf-lib": "1.17.1",
-    "react": "^19.1.0",
-    "react-before-after-slider-component": "^1.1.8",
-    "react-compare-slider": "^3.1.0",
-    "react-countup": "^6.5.3",
-    "react-dom": "^19.1.0",
-    "react-hot-toast": "^2.4.0",
-    "react-loader-spinner": "^7.0.3",
-    "react-use-measure": "^2.1.7",
-    "replicate": "^1.2.0",
-    "swr": "^2.3.6",
-    "tesseract.js": "6.0.1",
-    "tesseract.js-node": "^0.1.0"
+    "react": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

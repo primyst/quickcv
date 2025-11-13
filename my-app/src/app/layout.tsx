@@ -6,9 +6,9 @@ import { useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
-  title: 'Nostress AI — Simple, Fast Resume Builder',
+  title: 'Nostress CV AI — Simple, Fast Resume Builder',
   description:
-    'Nostress AI: Generate clean, ATS-friendly resumes in seconds. Minimal design, maximum clarity. Built for devs, creators, and job hunters who want results, not graphics.',
+    'Nostress CV AI: Generate clean, ATS-friendly resumes in seconds. Minimal design, maximum clarity. Built for devs, creators, and job hunters who want results, not graphics.',
   keywords: [
     'resume builder',
     'AI resume',
@@ -19,24 +19,24 @@ export const metadata: Metadata = {
   authors: [{ name: 'Abdulqudus (Primyst)', url: 'https://aq-portfolio-rose.vercel.app' }],
   metadataBase: new URL('https://nostresscv.vercel.app'),
   openGraph: {
-    title: 'Nostress AI — Simple, Fast Resume Builder',
+    title: 'Nostress CV AI — Simple, Fast Resume Builder',
     description:
       'Generate clean, ATS-friendly resumes in seconds. Minimal design, maximum clarity.',
     url: 'https://nostresscv.vercel.app',
-    siteName: 'Nostress AI',
+    siteName: 'Nostress CV AI',
     type: 'website',
     images: [
       {
         url: 'https://nostresscv.vercel.app/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Nostress AI — clean resume builder',
+        alt: 'Nostress cv AI — clean resume builder',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nostress AI — Simple, Fast Resume Builder',
+    title: 'Nostress CV AI — Simple, Fast Resume Builder',
     description: 'Build clean resumes in seconds. No overdesign, just results.',
     images: ['https://nostresscv.vercel.app/og-image.png'],
   },

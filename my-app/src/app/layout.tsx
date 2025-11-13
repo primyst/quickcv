@@ -48,6 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
+      <head>
+        <meta name="google-site-verification" content="GEhIL5p4eL2t-sYJHEb4OFm_nJKqeq-5WOBt-_vHRpc" />
+      </head>
       <body className="antialiased bg-white text-gray-900">
         {children}
         {/* Vercel Web Analytics */}

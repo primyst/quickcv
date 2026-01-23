@@ -898,7 +898,7 @@ export default function ResumeBuilder() {
         </div>
 
         <footer className="mt-8 sm:mt-10 text-center text-xs sm:text-sm text-slate-600">
-          Built by <a href="https://nostresscv.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-semibold">Primyst (Abdulqudus)</a>
+          Built by <a href="https://primyst.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-semibold">Primyst (Abdulqudus)</a>
         </footer>
       </div>
     </div>

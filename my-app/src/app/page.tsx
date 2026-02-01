@@ -1,906 +1,602 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { FileText, Download, Sparkles, Copy, Check, Phone, Mail, MapPin, Globe } from 'lucide-react';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import React, { useState } from "react";
+import {
+  FileText,
+  Sparkles,
+  Copy,
+  Check,
+  Printer,
+  Plus,
+  X,
+  Trash2,
+} from "lucide-react";
 
+/* ─── INITIAL / EXAMPLE DATA ─── */
+const BLANK = {
+  fullName: "",
+  jobTitle: "",
+  phone: "",
+  email: "",
+  location: "",
+  portfolio: "",
+  profile: "",
+  workExperience: [{ title: "", company: "", period: "", responsibilities: "" }],
+  education: [{ degree: "", institution: "", field: "", period: "", gpa: "" }],
+  skills: { frontend: "", backend: "", other: "" },
+  certifications: "",
+  languages: "",
+  achievements: "",
+};
+
+const EXAMPLE = {
+  fullName: "Alex J. Mercer",
+  jobTitle: "Senior Full-Stack Developer",
+  phone: "+1 (555) 123-4567",
+  email: "alex.mercer@example.com",
+  location: "San Francisco, CA",
+  portfolio: "alexmercer.dev",
+  profile:
+    "Results-oriented Full-Stack Developer with 6+ years of experience building scalable web applications. Proficient in the MERN stack and cloud architecture with a proven track record of improving performance by 40% and leading cross-functional teams to successful product launches.",
+  workExperience: [
+    {
+      title: "Senior Software Engineer",
+      company: "TechFlow Solutions",
+      period: "Mar 2021 – Present",
+      responsibilities:
+        "Led a team of 5 developers in redesigning the core legacy architecture, reducing server costs by 30%\nImplemented CI/CD pipelines using GitHub Actions, cutting deployment time from 2 hours to 12 minutes\nDeveloped a real-time collaboration feature using WebSockets and Redis, serving 10k+ concurrent users",
+    },
+    {
+      title: "Software Developer",
+      company: "Innovate Corp",
+      period: "Jun 2018 – Feb 2021",
+      responsibilities:
+        "Built responsive frontend interfaces using React and Tailwind CSS for 3 major product launches\nOptimized PostgreSQL database queries, improving data retrieval speeds by 25%\nCollaborated with UX designers to implement WCAG 2.1 accessible UI components",
+    },
+  ],
+  education: [
+    {
+      degree: "Bachelor of Science",
+      institution: "University of Technology",
+      field: "Computer Science",
+      period: "2014 – 2018",
+      gpa: "3.8 / 4.0",
+    },
+  ],
+  skills: {
+    frontend: "React, Next.js, TypeScript, Tailwind CSS, Redux, GraphQL",
+    backend: "Node.js, Express, PostgreSQL, MongoDB, Docker, AWS (EC2, S3, Lambda)",
+    other: "Git, Agile / Scrum, Jest, CI/CD, System Design",
+  },
+  certifications:
+    "AWS Certified Solutions Architect – Associate (2023)\nMeta Front-End Developer Professional Certificate (2022)",
+  languages: "English – Native\nSpanish – Professional Working Proficiency",
+  achievements:
+    "Hackathon Winner 2019 – Best FinTech Solution (200+ teams)\nEmployee of the Year 2022 – TechFlow Solutions",
+};
+
+/* ─── HELPERS ─── */
+function deepClone(o) {
+  return JSON.parse(JSON.stringify(o));
+}
+
+/* ─── COMPONENT ─── */
 export default function ResumeBuilder() {
-  const [step, setStep] = useState('form');
+  const [step, setStep] = useState("form"); // "form" | "preview"
   const [copied, setCopied] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    jobTitle: '',
-    phone: '',
-    email: '',
-    location: '',
-    portfolio: '',
-    profile: '',
-    workExperience: [{ title: '', company: '', period: '', responsibilities: '' }],
-    education: [{ degree: '', institution: '', field: '', period: '', gpa: '' }],
-    skills: { frontend: '', backend: '', other: '' },
-    certifications: '',
-    languages: '',
-    achievements: ''
-  });
+  const [formData, setFormData] = useState(deepClone(BLANK));
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  /* ── mutations ── */
+  const set = (field, value) =>
+    setFormData((p) => ({ ...p, [field]: value }));
 
-  const handleArrayChange = (field, index, key, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].map((item, i) => 
-        i === index ? { ...item, [key]: value } : item
-      )
+  const setArr = (field, idx, key, value) =>
+    setFormData((p) => ({
+      ...p,
+      [field]: p[field].map((item, i) =>
+        i === idx ? { ...item, [key]: value } : item
+      ),
     }));
+
+  const addArr = (field) => {
+    const tmpl =
+      field === "workExperience"
+        ? { title: "", company: "", period: "", responsibilities: "" }
+        : { degree: "", institution: "", field: "", period: "", gpa: "" };
+    setFormData((p) => ({ ...p, [field]: [...p[field], tmpl] }));
   };
 
-  const addArrayItem = (field) => {
-    const templates = {
-      workExperience: { title: '', company: '', period: '', responsibilities: '' },
-      education: { degree: '', institution: '', field: '', period: '', gpa: '' }
-    };
-    setFormData(prev => ({
-      ...prev,
-      [field]: [...prev[field], templates[field]]
+  const rmArr = (field, idx) =>
+    setFormData((p) => ({
+      ...p,
+      [field]: p[field].filter((_, i) => i !== idx),
     }));
-  };
 
-  const removeArrayItem = (field, index) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
-    }));
-  };
+  const setSkill = (key, val) =>
+    setFormData((p) => ({ ...p, skills: { ...p.skills, [key]: val } }));
 
-  const generateResume = () => {
-    setStep('preview');
-  };
-
-  const copyToClipboard = async () => {
-    let content = `${formData.fullName.toUpperCase()}\n`;
-    content += `${formData.jobTitle}\n\n`;
-    content += `CONTACT INFORMATION\n`;
-    content += `Phone: ${formData.phone}\n`;
-    content += `Email: ${formData.email}\n`;
-    content += `Location: ${formData.location}\n`;
-    if (formData.portfolio) content += `Portfolio: ${formData.portfolio}\n`;
-    
-    if (formData.profile) {
-      content += `\nPROFESSIONAL SUMMARY\n${formData.profile}\n`;
+  /* ── actions ── */
+  const copyText = async () => {
+    const d = formData;
+    let t = `${d.fullName.toUpperCase()}\n${d.jobTitle}\n`;
+    t += `${d.email} | ${d.phone} | ${d.location}`;
+    if (d.portfolio) t += ` | ${d.portfolio}`;
+    if (d.profile) t += `\n\nPROFESSIONAL SUMMARY\n${d.profile}`;
+    if (d.workExperience.some((e) => e.title)) {
+      t += "\n\nPROFESSIONAL EXPERIENCE";
+      d.workExperience.forEach((e) => {
+        if (e.title)
+          t += `\n\n${e.title} | ${e.company} | ${e.period}\n${e.responsibilities}`;
+      });
     }
-    
-    if (formData.workExperience.some(exp => exp.title)) {
-      content += `\nPROFESSIONAL EXPERIENCE\n`;
-      formData.workExperience.forEach(exp => {
-        if (exp.title) {
-          content += `${exp.title}\n`;
-          if (exp.company) content += `${exp.company}\n`;
-          content += `${exp.period}\n`;
-          content += `${exp.responsibilities}\n\n`;
+    if (d.education.some((e) => e.degree)) {
+      t += "\n\nEDUCATION";
+      d.education.forEach((e) => {
+        if (e.degree) {
+          t += `\n\n${e.degree}${e.field ? " in " + e.field : ""}\n${e.institution} | ${e.period}`;
+          if (e.gpa) t += ` | GPA: ${e.gpa}`;
         }
       });
     }
-    
-    if (formData.education.some(edu => edu.degree)) {
-      content += `EDUCATION\n`;
-      formData.education.forEach(edu => {
-        if (edu.degree) {
-          content += `${edu.degree}`;
-          if (edu.field) content += ` in ${edu.field}`;
-          content += `\n${edu.institution}\n`;
-          content += `${edu.period}`;
-          if (edu.gpa) content += ` | GPA: ${edu.gpa}`;
-          content += `\n\n`;
-        }
-      });
+    const sk = d.skills;
+    if (sk.frontend || sk.backend || sk.other) {
+      t += "\n\nTECHNICAL SKILLS";
+      if (sk.frontend) t += `\nFrontend: ${sk.frontend}`;
+      if (sk.backend) t += `\nBackend: ${sk.backend}`;
+      if (sk.other) t += `\nOther: ${sk.other}`;
     }
-    
-    if (formData.skills.frontend || formData.skills.backend || formData.skills.other) {
-      content += `TECHNICAL SKILLS\n`;
-      if (formData.skills.frontend) content += `${formData.skills.frontend}`;
-      if (formData.skills.backend) content += `${formData.skills.backend}`;
-      if (formData.skills.other) content += `${formData.skills.other}`;
-    }
-    
-    if (formData.certifications) {
-      content += `\nCERTIFICATIONS\n${formData.certifications}\n`;
-    }
-    
-    if (formData.languages) {
-      content += `\nLANGUAGES\n${formData.languages}\n`;
-    }
-    
-    if (formData.achievements) {
-      content += `\nKEY ACHIEVEMENTS\n${formData.achievements}\n`;
-    }
-
+    if (d.certifications) t += `\n\nCERTIFICATIONS\n${d.certifications}`;
+    if (d.languages) t += `\n\nLANGUAGES\n${d.languages}`;
+    if (d.achievements) t += `\n\nACHIEVEMENTS\n${d.achievements}`;
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(t);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const downloadDocx = async () => {
-    const children = [];
-
-    // Header - Name
-    children.push(
-      new Paragraph({
-        text: formData.fullName.toUpperCase(),
-        heading: HeadingLevel.HEADING_1,
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 100 }
-      })
-    );
-
-    // Job Title
-    children.push(
-      new Paragraph({
-        text: formData.jobTitle,
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 150 }
-      })
-    );
-
-    // Contact Info
-    const contactInfo = [];
-    if (formData.phone) contactInfo.push(`Phone: ${formData.phone}`);
-    if (formData.email) contactInfo.push(`Email: ${formData.email}`);
-    if (formData.location) contactInfo.push(`Location: ${formData.location}`);
-    if (formData.portfolio) contactInfo.push(`Portfolio: ${formData.portfolio}`);
-
-    if (contactInfo.length > 0) {
-      children.push(
-        new Paragraph({
-          text: contactInfo.join(' | '),
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 }
-        })
-      );
-    }
-
-    // Professional Summary
-    if (formData.profile) {
-      children.push(
-        new Paragraph({
-          text: 'PROFESSIONAL SUMMARY',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      children.push(
-        new Paragraph({
-          text: formData.profile,
-          spacing: { after: 200 }
-        })
-      );
-    }
-
-    // Professional Experience
-    if (formData.workExperience.some(exp => exp.title)) {
-      children.push(
-        new Paragraph({
-          text: 'PROFESSIONAL EXPERIENCE',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      formData.workExperience.forEach(exp => {
-        if (exp.title) {
-          children.push(
-            new Paragraph({
-              children: [
-                new TextRun({ text: exp.title, bold: true })
-              ],
-              spacing: { after: 50 }
-            })
-          );
-
-          if (exp.company) {
-            children.push(
-              new Paragraph({
-                text: exp.company,
-                spacing: { after: 50 }
-              })
-            );
-          }
-
-          if (exp.period) {
-            children.push(
-              new Paragraph({
-                children: [
-                  new TextRun({ text: exp.period, italics: true })
-                ],
-                spacing: { after: 100 }
-              })
-            );
-          }
-
-          const responsibilities = exp.responsibilities.split('\n').filter(r => r.trim());
-          responsibilities.forEach(resp => {
-            children.push(
-              new Paragraph({
-                text: resp.trim(),
-                spacing: { after: 50 }
-              })
-            );
-          });
-
-          children.push(
-            new Paragraph({
-              text: '',
-              spacing: { after: 100 }
-            })
-          );
-        }
-      });
-    }
-
-    // Education
-    if (formData.education.some(edu => edu.degree)) {
-      children.push(
-        new Paragraph({
-          text: 'EDUCATION',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      formData.education.forEach(edu => {
-        if (edu.degree) {
-          let degreeText = edu.degree;
-          if (edu.field) degreeText += ` in ${edu.field}`;
-          
-          children.push(
-            new Paragraph({
-              children: [
-                new TextRun({ text: degreeText, bold: true })
-              ],
-              spacing: { after: 50 }
-            })
-          );
-
-          if (edu.institution) {
-            children.push(
-              new Paragraph({
-                text: edu.institution,
-                spacing: { after: 50 }
-              })
-            );
-          }
-
-          let eduDetails = edu.period || '';
-          if (edu.gpa) eduDetails += ` | GPA: ${edu.gpa}`;
-          
-          if (eduDetails) {
-            children.push(
-              new Paragraph({
-                text: eduDetails,
-                spacing: { after: 100 }
-              })
-            );
-          }
-        }
-      });
-    }
-
-    // Technical Skills
-    if (formData.skills.frontend || formData.skills.backend || formData.skills.other) {
-      children.push(
-        new Paragraph({
-          text: 'TECHNICAL SKILLS',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      if (formData.skills.frontend) {
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Frontend: ', bold: true }),
-              new TextRun(formData.skills.frontend)
-            ],
-            spacing: { after: 50 }
-          })
-        );
-      }
-
-      if (formData.skills.backend) {
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Backend: ', bold: true }),
-              new TextRun(formData.skills.backend)
-            ],
-            spacing: { after: 50 }
-          })
-        );
-      }
-
-      if (formData.skills.other) {
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Other: ', bold: true }),
-              new TextRun(formData.skills.other)
-            ],
-            spacing: { after: 100 }
-          })
-        );
-      }
-    }
-
-    // Certifications
-    if (formData.certifications) {
-      children.push(
-        new Paragraph({
-          text: 'CERTIFICATIONS',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      const certs = formData.certifications.split('\n').filter(c => c.trim());
-      certs.forEach(cert => {
-        children.push(
-          new Paragraph({
-            text: cert.trim(),
-            spacing: { after: 50 }
-          })
-        );
-      });
-
-      children.push(
-        new Paragraph({
-          text: '',
-          spacing: { after: 100 }
-        })
-      );
-    }
-
-    // Languages
-    if (formData.languages) {
-      children.push(
-        new Paragraph({
-          text: 'LANGUAGES',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      const languages = formData.languages.split('\n').filter(l => l.trim());
-      languages.forEach(lang => {
-        children.push(
-          new Paragraph({
-            text: lang.trim(),
-            spacing: { after: 50 }
-          })
-        );
-      });
-
-      children.push(
-        new Paragraph({
-          text: '',
-          spacing: { after: 100 }
-        })
-      );
-    }
-
-    // Key Achievements
-    if (formData.achievements) {
-      children.push(
-        new Paragraph({
-          text: 'KEY ACHIEVEMENTS',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        })
-      );
-
-      const achievements = formData.achievements.split('\n').filter(a => a.trim());
-      achievements.forEach(achievement => {
-        children.push(
-          new Paragraph({
-            text: achievement.trim(),
-            spacing: { after: 50 }
-          })
-        );
-      });
-    }
-
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: children
-      }]
-    });
-
-    const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${formData.fullName.replace(/\s+/g, '_')}_Resume.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const doPrint = () => {
+    setStep("preview");
+    setTimeout(() => window.print(), 200);
   };
 
-  if (step === 'preview') {
+  /* ── shared input styles ── */
+  const inp =
+    "w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 transition placeholder-gray-400";
+  const ta = inp + " resize-none";
+
+  /* ═══════════════════════════════════════ PREVIEW ═══════════════════════════════════════ */
+  if (step === "preview") {
+    const d = formData;
+    const Section = ({ title, children }) => (
+      <div className="mt-5">
+        <div className="flex items-center border-b border-black" style={{ borderWidth: "1.5px" }}>
+          <span className="text-xs font-bold uppercase tracking-widest pb-0.5">{title}</span>
+        </div>
+        <div className="mt-2">{children}</div>
+      </div>
+    );
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-xl p-6 sm:p-8 lg:p-10 mb-6">
-            {/* Header */}
-            <div className="text-center mb-8 border-b-2 border-slate-200 pb-6">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-2">
-                {formData.fullName.toUpperCase()}
-              </h1>
-              <p className="text-lg sm:text-xl text-black font-semibold mb-4">
-                {formData.jobTitle}
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-black">
-                {formData.phone && (
-                  <span className="flex items-center gap-1">
-                    <Phone size={16} />
-                    {formData.phone}
-                  </span>
-                )}
-                {formData.email && (
-                  <span className="flex items-center gap-1">
-                    <Mail size={16} />
-                    {formData.email}
-                  </span>
-                )}
-                {formData.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={16} />
-                    {formData.location}
-                  </span>
-                )}
-                {formData.portfolio && (
-                  <span className="flex items-center gap-1">
-                    <Globe size={16} />
-                    <a href={formData.portfolio} target="_blank" rel="noopener noreferrer" className="text-black hover:underline">
-                      Portfolio
-                    </a>
-                  </span>
-                )}
+      <>
+        <style>{`
+          @media print {
+            @page { margin: 18mm; size: A4; }
+            body * { visibility: hidden; }
+            #sheet, #sheet * { visibility: visible; }
+            #sheet {
+              position: fixed; top: 0; left: 0;
+              width: 100%; height: 100%;
+              padding: 0 !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+            }
+            .no-print { display: none !important; }
+          }
+        `}</style>
+
+        {/* nav bar */}
+        <div className="no-print sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-black p-1.5 rounded-lg">
+                <FileText size={18} className="text-white" />
               </div>
+              <span className="font-bold text-sm">Primyst</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep("form")}
+                className="px-4 py-1.5 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition"
+              >
+                ← Edit
+              </button>
+              <button
+                onClick={copyText}
+                className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition flex items-center gap-1.5"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+              <button
+                onClick={doPrint}
+                className="px-4 py-1.5 text-sm font-bold text-white bg-black rounded-md hover:bg-gray-800 transition flex items-center gap-1.5"
+              >
+                <Printer size={14} /> Print / Save PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* A4 sheet */}
+        <div className="no-print min-h-screen bg-gray-100 py-8 flex justify-center px-4">
+          <div
+            id="sheet"
+            className="bg-white shadow-xl"
+            style={{
+              width: "210mm",
+              minHeight: "297mm",
+              padding: "18mm 20mm",
+              color: "#000",
+              fontFamily: "'Georgia', serif",
+            }}
+          >
+            {/* header */}
+            <div className="text-center" style={{ borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "4px" }}>
+              <h1 className="font-bold uppercase tracking-widest" style={{ fontSize: "22px", letterSpacing: "3px", fontFamily: "Georgia, serif" }}>
+                {d.fullName || "YOUR NAME"}
+              </h1>
+              <p className="mt-1" style={{ fontSize: "11px", color: "#000", fontFamily: "Arial, sans-serif", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+                {d.jobTitle || "Professional Title"}
+              </p>
+              <p className="mt-2" style={{ fontSize: "9.5px", color: "#000", fontFamily: "Arial, sans-serif" }}>
+                {[d.phone, d.email, d.location, d.portfolio].filter(Boolean).join("  •  ")}
+              </p>
             </div>
 
-            {/* Professional Summary */}
-            {formData.profile && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-3 uppercase tracking-wide">Professional Summary</h2>
-                <p className="text-black leading-relaxed">{formData.profile}</p>
-              </div>
+            {/* summary */}
+            {d.profile && (
+              <Section title="Professional Summary">
+                <p style={{ fontSize: "9.5px", lineHeight: "1.55", color: "#000", fontFamily: "Arial, sans-serif", textAlign: "justify" }}>
+                  {d.profile}
+                </p>
+              </Section>
             )}
 
-            {/* Professional Experience */}
-            {formData.workExperience.some(exp => exp.title) && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Professional Experience</h2>
-                <div className="space-y-6">
-                  {formData.workExperience.map((exp, idx) => (
-                    exp.title && (
-                      <div key={idx} className="border-l-4 border-black pl-4">
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="text-lg font-bold text-black">{exp.title}</h3>
-                          <span className="text-sm text-black font-semibold">{exp.period}</span>
-                        </div>
-                        {exp.company && (
-                          <p className="text-black font-semibold mb-2">{exp.company}</p>
-                        )}
-                        <p className="text-black whitespace-pre-line text-sm leading-relaxed">
-                          {exp.responsibilities}
-                        </p>
+            {/* experience */}
+            {d.workExperience.some((e) => e.title) && (
+              <Section title="Professional Experience">
+                {d.workExperience.map((e, i) =>
+                  e.title ? (
+                    <div key={i} className={i > 0 ? "mt-3" : ""}>
+                      <div className="flex justify-between items-baseline">
+                        <span style={{ fontSize: "10.5px", fontWeight: 700, fontFamily: "Arial, sans-serif", color: "#000" }}>{e.title}</span>
+                        <span style={{ fontSize: "9px", color: "#000", fontFamily: "Arial, sans-serif" }}>{e.period}</span>
                       </div>
-                    )
-                  ))}
-                </div>
-              </div>
+                      <p style={{ fontSize: "9.5px", color: "#000", fontFamily: "Arial, sans-serif", marginTop: "1px" }}>
+                        <span style={{ fontWeight: 600 }}>{e.company}</span>
+                      </p>
+                      <ul style={{ marginTop: "3px", paddingLeft: "14px" }}>
+                        {e.responsibilities
+                          .split("\n")
+                          .filter(Boolean)
+                          .map((r, ri) => (
+                            <li key={ri} style={{ fontSize: "9px", lineHeight: "1.5", color: "#000", fontFamily: "Arial, sans-serif", listStyleType: "disc", marginTop: ri > 0 ? "1px" : "0" }}>
+                              {r.replace(/^[-•]\s*/, "")}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  ) : null
+                )}
+              </Section>
             )}
 
-            {/* Education */}
-            {formData.education.some(edu => edu.degree) && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Education</h2>
-                <div className="space-y-4">
-                  {formData.education.map((edu, idx) => (
-                    edu.degree && (
-                      <div key={idx} className="border-l-4 border-black pl-4">
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="text-lg font-bold text-black">
-                            {edu.degree}
-                            {edu.field && ` in ${edu.field}`}
-                          </h3>
-                          <span className="text-sm text-black font-semibold">{edu.period}</span>
-                        </div>
-                        <p className="text-black font-semibold mb-1">{edu.institution}</p>
-                        {edu.gpa && (
-                          <p className="text-sm text-black">GPA: {edu.gpa}</p>
-                        )}
+            {/* education */}
+            {d.education.some((e) => e.degree) && (
+              <Section title="Education">
+                {d.education.map((e, i) =>
+                  e.degree ? (
+                    <div key={i} className={i > 0 ? "mt-2.5" : ""}>
+                      <div className="flex justify-between items-baseline">
+                        <span style={{ fontSize: "10.5px", fontWeight: 700, fontFamily: "Arial, sans-serif", color: "#000" }}>
+                          {e.degree}{e.field ? ` in ${e.field}` : ""}
+                        </span>
+                        <span style={{ fontSize: "9px", color: "#000", fontFamily: "Arial, sans-serif" }}>{e.period}</span>
                       </div>
-                    )
+                      <div className="flex justify-between" style={{ marginTop: "1px" }}>
+                        <span style={{ fontSize: "9.5px", color: "#000", fontFamily: "Arial, sans-serif" }}>{e.institution}</span>
+                        {e.gpa && <span style={{ fontSize: "9px", color: "#000", fontFamily: "Arial, sans-serif" }}>GPA: {e.gpa}</span>}
+                      </div>
+                    </div>
+                  ) : null
+                )}
+              </Section>
+            )}
+
+            {/* skills */}
+            {(d.skills.frontend || d.skills.backend || d.skills.other) && (
+              <Section title="Technical Skills">
+                <div style={{ fontFamily: "Arial, sans-serif", fontSize: "9.5px", color: "#000" }}>
+                  {d.skills.frontend && (
+                    <div className="flex" style={{ marginBottom: "2px" }}>
+                      <span style={{ fontWeight: 700, width: "68px", flexShrink: 0 }}>Frontend</span>
+                      <span>{d.skills.frontend}</span>
+                    </div>
+                  )}
+                  {d.skills.backend && (
+                    <div className="flex" style={{ marginBottom: "2px" }}>
+                      <span style={{ fontWeight: 700, width: "68px", flexShrink: 0 }}>Backend</span>
+                      <span>{d.skills.backend}</span>
+                    </div>
+                  )}
+                  {d.skills.other && (
+                    <div className="flex">
+                      <span style={{ fontWeight: 700, width: "68px", flexShrink: 0 }}>Other</span>
+                      <span>{d.skills.other}</span>
+                    </div>
+                  )}
+                </div>
+              </Section>
+            )}
+
+            {/* two-col: certs + languages */}
+            {(d.certifications || d.languages) && (
+              <div className="flex gap-8 mt-5">
+                {d.certifications && (
+                  <div style={{ flex: 1 }}>
+                    <div className="flex items-center" style={{ borderBottom: "1.5px solid #000" }}>
+                      <span className="text-xs font-bold uppercase tracking-widest pb-0.5">Certifications</span>
+                    </div>
+                    <ul style={{ marginTop: "6px", paddingLeft: "14px" }}>
+                      {d.certifications.split("\n").filter(Boolean).map((c, i) => (
+                        <li key={i} style={{ fontSize: "9px", lineHeight: "1.55", color: "#000", fontFamily: "Arial, sans-serif", listStyleType: "disc" }}>
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {d.languages && (
+                  <div style={{ flex: 1 }}>
+                    <div className="flex items-center" style={{ borderBottom: "1.5px solid #000" }}>
+                      <span className="text-xs font-bold uppercase tracking-widest pb-0.5">Languages</span>
+                    </div>
+                    <ul style={{ marginTop: "6px", paddingLeft: "14px" }}>
+                      {d.languages.split("\n").filter(Boolean).map((l, i) => (
+                        <li key={i} style={{ fontSize: "9px", lineHeight: "1.55", color: "#000", fontFamily: "Arial, sans-serif", listStyleType: "disc" }}>
+                          {l}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* achievements */}
+            {d.achievements && (
+              <Section title="Key Achievements">
+                <ul style={{ paddingLeft: "14px" }}>
+                  {d.achievements.split("\n").filter(Boolean).map((a, i) => (
+                    <li key={i} style={{ fontSize: "9px", lineHeight: "1.55", color: "#000", fontFamily: "Arial, sans-serif", listStyleType: "disc" }}>
+                      {a}
+                    </li>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Technical Skills */}
-            {(formData.skills.frontend || formData.skills.backend || formData.skills.other) && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Technical Skills</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {formData.skills.frontend && (
-                    <div>
-                      <p className="font-semibold text-black mb-1">Frontend</p>
-                      <p className="text-black text-sm">{formData.skills.frontend}</p>
-                    </div>
-                  )}
-                  {formData.skills.backend && (
-                    <div>
-                      <p className="font-semibold text-black mb-1">Backend</p>
-                      <p className="text-black text-sm">{formData.skills.backend}</p>
-                    </div>
-                  )}
-                  {formData.skills.other && (
-                    <div className="sm:col-span-2">
-                      <p className="font-semibold text-black mb-1">Other Skills</p>
-                      <p className="text-black text-sm">{formData.skills.other}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Certifications */}
-            {formData.certifications && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Certifications</h2>
-                <p className="text-black whitespace-pre-line text-sm">{formData.certifications}</p>
-              </div>
-            )}
-
-            {/* Languages */}
-            {formData.languages && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Languages</h2>
-                <p className="text-black whitespace-pre-line text-sm">{formData.languages}</p>
-              </div>
-            )}
-
-            {/* Key Achievements */}
-            {formData.achievements && (
-              <div>
-                <h2 className="text-xl font-bold text-black mb-4 uppercase tracking-wide">Key Achievements</h2>
-                <p className="text-black whitespace-pre-line text-sm">{formData.achievements}</p>
-              </div>
+                </ul>
+              </Section>
             )}
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <button
-              onClick={() => setStep('form')}
-              className="flex-1 px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition font-semibold text-sm sm:text-base"
-            >
-              Edit Resume
-            </button>
-            <button
-              onClick={copyToClipboard}
-              className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 font-semibold text-sm sm:text-base"
-            >
-              {copied ? <Check size={18} /> : <Copy size={18} />}
-              {copied ? 'Copied!' : 'Copy to Clipboard'}
-            </button>
-            <button
-              onClick={downloadDocx}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 font-semibold text-sm sm:text-base"
-            >
-              <Download size={18} />
-              Download .docx
-            </button>
-          </div>
-
-   
         </div>
-      </div>
+
+        {/* footer ref */}
+        <div className="no-print text-center py-4">
+          <span className="text-xs text-gray-400">Created with Primyst Resume Builder</span>
+        </div>
+      </>
     );
   }
 
+  /* ═══════════════════════════════════════ FORM ═══════════════════════════════════════ */
+  const d = formData;
+
+  /* section card wrapper */
+  const Card = ({ step: n, title, children, onAdd, addLabel }) => (
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between bg-gray-50 px-5 py-3 border-b border-gray-200">
+        <h2 className="flex items-center gap-2.5 text-sm font-bold text-gray-800">
+          <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">{n}</span>
+          {title}
+        </h2>
+        {onAdd && (
+          <button onClick={onAdd} className="flex items-center gap-1 text-xs font-semibold text-gray-600 border border-gray-300 px-2.5 py-1 rounded-md hover:bg-gray-100 transition">
+            <Plus size={11} /> {addLabel || "Add"}
+          </button>
+        )}
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+
+  /* repeatable item shell */
+  const Item = ({ idx, canRemove, onRemove, children }) => (
+    <div className="relative group border border-gray-200 rounded-md bg-gray-50 p-4">
+      {canRemove && (
+        <button onClick={onRemove} className="absolute top-2.5 right-2.5 text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+          <X size={15} />
+        </button>
+      )}
+      {children}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-4 text-sm sm:text-base font-semibold">
-            <Sparkles size={18} />
-            Professional Resume Builder
+    <>
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+        }
+      `}</style>
+
+      {/* nav bar */}
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-black p-1.5 rounded-lg">
+              <FileText size={18} className="text-white" />
+            </div>
+            <span className="font-bold text-sm">Primyst</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3">
-            Build Your Professional Resume
-          </h1>
-          <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-            Create a polished, ATS-optimized resume in minutes. Clean design, professional formatting, ready for any opportunity.
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 lg:p-10">
-          <div className="space-y-8">
-            {/* Basic Information */}
-            <section>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5 flex items-center gap-2">
-                <FileText size={24} className="text-blue-600" />
-                Basic Information
-              </h2>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Full Name *"
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-                <input
-                  type="text"
-                  placeholder="Professional Title (e.g., Senior Full-Stack Developer) *"
-                  value={formData.jobTitle}
-                  onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    type="tel"
-                    placeholder="Phone Number *"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address *"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="City, Country *"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-                <input
-                  type="url"
-                  placeholder="Portfolio URL (optional)"
-                  value={formData.portfolio}
-                  onChange={(e) => handleInputChange('portfolio', e.target.value)}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
-            </section>
-
-            {/* Professional Summary */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Professional Summary (Optional)</h3>
-              <textarea
-                placeholder="Write a compelling summary of your professional background, key achievements, and career objectives. (2-3 sentences)"
-                value={formData.profile}
-                onChange={(e) => handleInputChange('profile', e.target.value)}
-                rows="5"
-                className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-              />
-            </section>
-
-            {/* Professional Experience */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Professional Experience *</h3>
-              <div className="space-y-4">
-                {formData.workExperience.map((exp, idx) => (
-                  <div key={idx} className="p-4 sm:p-5 border-2 border-slate-200 rounded-lg hover:border-blue-300 transition">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                      <input
-                        type="text"
-                        placeholder="Job Title *"
-                        value={exp.title}
-                        onChange={(e) => handleArrayChange('workExperience', idx, 'title', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Company Name"
-                        value={exp.company}
-                        onChange={(e) => handleArrayChange('workExperience', idx, 'company', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Period (e.g., Jan 2023 - Present) *"
-                      value={exp.period}
-                      onChange={(e) => handleArrayChange('workExperience', idx, 'period', e.target.value)}
-                      className="w-full px-4 py-2 mb-4 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    />
-                    <textarea
-                      placeholder="Key responsibilities and achievements (use bullet points with -)"
-                      value={exp.responsibilities}
-                      onChange={(e) => handleArrayChange('workExperience', idx, 'responsibilities', e.target.value)}
-                      rows="4"
-                      className="w-full px-4 py-2 mb-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    />
-                    {idx > 0 && (
-                      <button
-                        onClick={() => removeArrayItem('workExperience', idx)}
-                        className="text-red-600 hover:text-red-800 text-xs sm:text-sm font-semibold transition"
-                      >
-                        Remove Position
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => addArrayItem('workExperience')}
-                className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-800 text-sm sm:text-base font-semibold border border-blue-300 rounded-lg hover:bg-blue-50 transition"
-              >
-                + Add Another Position
-              </button>
-            </section>
-
-            {/* Education */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Education *</h3>
-              <div className="space-y-4">
-                {formData.education.map((edu, idx) => (
-                  <div key={idx} className="p-4 sm:p-5 border-2 border-slate-200 rounded-lg hover:border-green-300 transition">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                      <input
-                        type="text"
-                        placeholder="Degree (e.g., Bachelor of Science) *"
-                        value={edu.degree}
-                        onChange={(e) => handleArrayChange('education', idx, 'degree', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Field of Study"
-                        value={edu.field}
-                        onChange={(e) => handleArrayChange('education', idx, 'field', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Institution Name *"
-                      value={edu.institution}
-                      onChange={(e) => handleArrayChange('education', idx, 'institution', e.target.value)}
-                      className="w-full px-4 py-2 mb-4 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        placeholder="Graduation Period (e.g., 2020 - 2024) *"
-                        value={edu.period}
-                        onChange={(e) => handleArrayChange('education', idx, 'period', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                      <input
-                        type="text"
-                        placeholder="GPA (optional)"
-                        value={edu.gpa}
-                        onChange={(e) => handleArrayChange('education', idx, 'gpa', e.target.value)}
-                        className="px-4 py-2 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                    </div>
-                    {idx > 0 && (
-                      <button
-                        onClick={() => removeArrayItem('education', idx)}
-                        className="text-red-600 hover:text-red-800 text-xs sm:text-sm font-semibold transition mt-3"
-                      >
-                        Remove Education
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => addArrayItem('education')}
-                className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-800 text-sm sm:text-base font-semibold border border-blue-300 rounded-lg hover:bg-blue-50 transition"
-              >
-                + Add Another Education
-              </button>
-            </section>
-
-            {/* Technical Skills */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Technical Skills *</h3>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Frontend (e.g., React, Next.js, TypeScript, Tailwind CSS)"
-                  value={formData.skills.frontend}
-                  onChange={(e) => handleInputChange('skills', { ...formData.skills, frontend: e.target.value })}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-                <input
-                  type="text"
-                  placeholder="Backend (e.g., Node.js, Python, PostgreSQL, MongoDB)"
-                  value={formData.skills.backend}
-                  onChange={(e) => handleInputChange('skills', { ...formData.skills, backend: e.target.value })}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-                <input
-                  type="text"
-                  placeholder="Other Skills (e.g., Git, Docker, AWS, REST APIs)"
-                  value={formData.skills.other}
-                  onChange={(e) => handleInputChange('skills', { ...formData.skills, other: e.target.value })}
-                  className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
-            </section>
-
-            {/* Certifications */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Certifications (Optional)</h3>
-              <textarea
-                placeholder="List your professional certifications (one per line)&#10;e.g., AWS Certified Solutions Architect&#10;Google Cloud Professional Data Engineer"
-                value={formData.certifications}
-                onChange={(e) => handleInputChange('certifications', e.target.value)}
-                rows="4"
-                className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-              />
-            </section>
-
-            {/* Languages */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Languages (Optional)</h3>
-              <textarea
-                placeholder="List your language proficiencies (one per line)&#10;e.g., English - Fluent&#10;Spanish - Intermediate"
-                value={formData.languages}
-                onChange={(e) => handleInputChange('languages', e.target.value)}
-                rows="3"
-                className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-              />
-            </section>
-
-            {/* Key Achievements */}
-            <section>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Key Achievements (Optional)</h3>
-              <textarea
-                placeholder="Highlight your major professional achievements (one per line)&#10;e.g., Led a team of 5 developers to deliver a 40% performance improvement&#10;Reduced deployment time by 60% through CI/CD automation"
-                value={formData.achievements}
-                onChange={(e) => handleInputChange('achievements', e.target.value)}
-                rows="4"
-                className="w-full px-4 py-3 text-sm sm:text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-              />
-            </section>
-
-            {/* Generate Button */}
+          <div className="flex gap-2">
             <button
-              onClick={generateResume}
-              className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-bold text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg"
+              onClick={() => setFormData(deepClone(EXAMPLE))}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition"
             >
-              <Sparkles size={20} />
-              Generate Professional Resume
+              <Sparkles size={12} /> Example
+            </button>
+            <button
+              onClick={() => { if (window.confirm("Clear all fields?")) setFormData(deepClone(BLANK)); }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-500 border border-gray-300 rounded-md hover:bg-gray-50 transition"
+            >
+              <Trash2 size={12} /> Clear
+            </button>
+            <button
+              onClick={() => setStep("preview")}
+              className="px-4 py-1.5 text-sm font-bold text-white bg-black rounded-md hover:bg-gray-800 transition"
+            >
+              Preview →
             </button>
           </div>
         </div>
+      </div>
 
-        <footer className="mt-8 sm:mt-10 text-center text-xs sm:text-sm text-slate-600">
+      {/* form body */}
+      <div className="max-w-3xl mx-auto px-4 py-8 pb-24 space-y-5">
+
+        {/* hero */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Build Your Resume</h1>
+          <p className="text-sm text-gray-500 mt-1 max-w-md mx-auto">
+            Fill in the sections below. Hit <em>Preview</em> to see your polished, print-ready result.
+          </p>
+          {/* mobile quick actions */}
+          <div className="flex justify-center gap-3 mt-3 sm:hidden">
+            <button onClick={() => setFormData(deepClone(EXAMPLE))} className="text-xs text-gray-600 underline">Load Example</button>
+            <button onClick={() => { if (window.confirm("Clear all?")) setFormData(deepClone(BLANK)); }} className="text-xs text-gray-500 underline">Clear</button>
+          </div>
+        </div>
+
+        {/* 1 – Personal Details */}
+        <Card step={1} title="Personal Details">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Full Name</label>
+              <input className={inp} placeholder="John Doe" value={d.fullName} onChange={(e) => set("fullName", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Job Title</label>
+              <input className={inp} placeholder="Software Engineer" value={d.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+              <input className={inp} type="email" placeholder="john@example.com" value={d.email} onChange={(e) => set("email", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Phone</label>
+              <input className={inp} placeholder="+1 234 567 890" value={d.phone} onChange={(e) => set("phone", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Location</label>
+              <input className={inp} placeholder="City, Country" value={d.location} onChange={(e) => set("location", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Portfolio / LinkedIn</label>
+              <input className={inp} placeholder="linkedin.com/in/johndoe" value={d.portfolio} onChange={(e) => set("portfolio", e.target.value)} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Professional Summary <span className="font-normal text-gray-400">(optional)</span></label>
+            <textarea className={ta} rows={3} placeholder="2–3 sentences summarising your experience, strengths, and goals." value={d.profile} onChange={(e) => set("profile", e.target.value)} />
+          </div>
+        </Card>
+
+        {/* 2 – Experience */}
+        <Card step={2} title="Professional Experience" onAdd={() => addArr("workExperience")} addLabel="Add Role">
+          <div className="space-y-3">
+            {d.workExperience.map((e, i) => (
+              <Item key={i} idx={i} canRemove={d.workExperience.length > 1} onRemove={() => rmArr("workExperience", i)}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
+                  <input className={inp} placeholder="Job Title" value={e.title} onChange={(ev) => setArr("workExperience", i, "title", ev.target.value)} />
+                  <input className={inp} placeholder="Company" value={e.company} onChange={(ev) => setArr("workExperience", i, "company", ev.target.value)} />
+                </div>
+                <input className={`${inp} mb-2.5`} placeholder="Period  (e.g. Mar 2021 – Present)" value={e.period} onChange={(ev) => setArr("workExperience", i, "period", ev.target.value)} />
+                <textarea className={ta} rows={3} placeholder={"One responsibility per line\n– Led the backend migration …\n– Reduced load time by 40 %"} value={e.responsibilities} onChange={(ev) => setArr("workExperience", i, "responsibilities", ev.target.value)} />
+              </Item>
+            ))}
+          </div>
+        </Card>
+
+        {/* 3 – Education */}
+        <Card step={3} title="Education" onAdd={() => addArr("education")} addLabel="Add Entry">
+          <div className="space-y-3">
+            {d.education.map((e, i) => (
+              <Item key={i} idx={i} canRemove={d.education.length > 1} onRemove={() => rmArr("education", i)}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
+                  <input className={inp} placeholder="Degree (e.g. B.S. Computer Science)" value={e.degree} onChange={(ev) => setArr("education", i, "degree", ev.target.value)} />
+                  <input className={inp} placeholder="Field of Study" value={e.field} onChange={(ev) => setArr("education", i, "field", ev.target.value)} />
+                </div>
+                <input className={`${inp} mb-2.5`} placeholder="Institution" value={e.institution} onChange={(ev) => setArr("education", i, "institution", ev.target.value)} />
+                <div className="grid grid-cols-2 gap-2.5">
+                  <input className={inp} placeholder="Period (e.g. 2014 – 2018)" value={e.period} onChange={(ev) => setArr("education", i, "period", ev.target.value)} />
+                  <input className={inp} placeholder="GPA (optional)" value={e.gpa} onChange={(ev) => setArr("education", i, "gpa", ev.target.value)} />
+                </div>
+              </Item>
+            ))}
+          </div>
+        </Card>
+
+        {/* 4 – Skills & Extras */}
+        <Card step={4} title="Skills & Extras">
+          <div className="space-y-2.5">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Frontend</label>
+              <input className={inp} placeholder="React, Next.js, TypeScript …" value={d.skills.frontend} onChange={(e) => setSkill("frontend", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Backend</label>
+              <input className={inp} placeholder="Node.js, PostgreSQL, Docker …" value={d.skills.backend} onChange={(e) => setSkill("backend", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Other</label>
+              <input className={inp} placeholder="Git, AWS, Agile …" value={d.skills.other} onChange={(e) => setSkill("other", e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Certifications <span className="font-normal text-gray-400">(one per line)</span></label>
+              <textarea className={ta} rows={3} placeholder={"AWS Solutions Architect (2023)\nGoogle Cloud Professional"} value={d.certifications} onChange={(e) => set("certifications", e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Languages <span className="font-normal text-gray-400">(one per line)</span></label>
+              <textarea className={ta} rows={3} placeholder={"English – Native\nSpanish – Conversational"} value={d.languages} onChange={(e) => set("languages", e.target.value)} />
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Key Achievements <span className="font-normal text-gray-400">(optional, one per line)</span></label>
+            <textarea className={ta} rows={2} placeholder={"Hackathon Winner 2019\nEmployee of the Year 2022"} value={d.achievements} onChange={(e) => set("achievements", e.target.value)} />
+          </div>
+        </Card>
+      </div>
+
+      {/* footer */}
+      <footer className="mt-8 sm:mt-10 text-center text-xs sm:text-sm text-slate-600">
           Built by <a href="https://primyst.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-semibold">Primyst (Abdulqudus)</a>
         </footer>
-      </div>
-    </div>
+    </>
   );
-}
+      }

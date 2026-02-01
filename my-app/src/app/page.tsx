@@ -99,9 +99,9 @@ export default function ResumeBuilder() {
     
     if (formData.skills.frontend || formData.skills.backend || formData.skills.other) {
       content += `TECHNICAL SKILLS\n`;
-      if (formData.skills.frontend) content += `Frontend: ${formData.skills.frontend}\n`;
-      if (formData.skills.backend) content += `Backend: ${formData.skills.backend}\n`;
-      if (formData.skills.other) content += `Other: ${formData.skills.other}\n`;
+      if (formData.skills.frontend) content += `${formData.skills.frontend}`;
+      if (formData.skills.backend) content += `${formData.skills.backend}`;
+      if (formData.skills.other) content += `${formData.skills.other}`;
     }
     
     if (formData.certifications) {
